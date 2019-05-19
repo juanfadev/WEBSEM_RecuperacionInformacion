@@ -20,9 +20,19 @@ class WebSemantica
 
   def exercise2_spearman(size = @size)
     # Load both CSV
-    textrank = WebSemantica.loadCSV("/textrank#{size}.csv")
-    rootLLR = WebSemantica.loadCSV("/rootLLR#{size}.csv")
-    puts Exercise2::spearman_compare(textrank, rootLLR)
+    textrank =  begin
+      WebSemantica.loadCSV("/textrank#{size}.csv")
+    rescue
+      self.exercise2_pagerank
+      WebSemantica.loadCSV("/textrank#{size}.csv")
+    end
+    rootLLR = begin
+      WebSemantica.loadCSV("/rootLLR#{size}.csv")
+    rescue
+      self.exercise1
+      WebSemantica.loadCSV("/rootLLR#{size}.csv")
+    end
+    puts "The spearman ratio with the last #{size} posts is: #{Exercise2::spearman_compare(textrank, rootLLR)}"
   end
 
   def self.loadCSV(path)
@@ -36,5 +46,6 @@ class WebSemantica
   end
 end
 
+args = Hash[ ARGV.flat_map{|s| s.scan(/--?([^=\s]+)(?:=(\S+))?/) } ]
 
-WebSemantica.new(80)
+WebSemantica.new(args['size'])
