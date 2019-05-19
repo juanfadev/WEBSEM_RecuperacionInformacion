@@ -19,7 +19,7 @@ module Exercise2
         text = []
       else
         text = text_string&.scan(/[-'\w]+/)
-        text = clean_up_array(text)
+        text = Common.clean_up_array(text)
       end
       addNodes(text = text, pr = pr)
     end
@@ -28,35 +28,6 @@ module Exercise2
     puts "Save to CSV"
     CSV.open("textrank#{size}.csv", "wb") {|csv| nodes.each {|elem| csv << elem}}
     puts "Finished Exercise 2"
-  end
-
-
-  def clean_up_array(array)
-    # Remove numbers
-    array.each do |k|
-      if /\A\d+\z/.match(k)
-        array.delete(k)
-      end
-    end
-
-    # Discard words with special chars
-    array.each do |k|
-      special = "?<>',?[]}{=-)(*&^%$#`~{}"
-      regex = /[#{special.gsub(/./) {|char| "\\#{char}"}}]/
-      if (k =~ regex)
-        array.delete(k)
-      end
-    end
-    # Short words (less or eq 2 in length) dont have much semantics in english or maybe single letter (I, we, of, my...)
-    array.delete_if {|k| k.length <= 2}
-    # Delete strange blank char
-    array.delete("x200b")
-    # Clean URLS
-    array.delete_if {|k| k.start_with?("http")}
-    # Filter StopWords
-    filter = Stopwords::Snowball::Filter.new "en"
-    array = filter.filter array
-    array
   end
 
 # @param [Integer] sentence_size

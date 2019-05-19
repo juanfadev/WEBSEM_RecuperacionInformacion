@@ -21,9 +21,41 @@ module Common
 
 # Source: https://stackoverflow.com/questions/9675146/how-to-get-words-frequency-in-efficient-way-with-ruby
   def count_words(string)
-    string&.scan(/\w+/)&.reduce(Hash.new(0)) {|res, w| res[w.downcase] += 1; res}
+    text = string&.scan(/[-'\w]+/)
+    if (text != nil)
+      text = clean_up_array text
+      text.reduce(Hash.new(0)) {|res, w| res[w.downcase] += 1; res}
+    end
+
   end
 
+  def clean_up_array(array)
+    # Remove numbers
+    array.each do |k|
+      if /\A\d+\z/.match(k)
+        array.delete(k)
+      end
+    end
+
+    # Discard words with special chars
+    array.each do |k|
+      special = "?<>,?[]}{=-)(*&^%$#`~{}"
+      regex = /[#{special.gsub(/./) {|char| "\\#{char}"}}]/
+      if (k =~ regex)
+        array.delete(k)
+      end
+    end
+    # Short words (less or eq 2 in length) dont have much semantics in english or maybe single letter (I, we, of, my...)
+    array.delete_if {|k| k.length <= 2}
+    # Delete strange blank char
+    array.delete("x200b")
+    # Clean URLS
+    array.delete_if {|k| k.start_with?("http")}
+    # Filter StopWords
+    filter = Stopwords::Snowball::Filter.new "en"
+    array = filter.filter array
+    array
+  end
 
   def downloadPushShift(subreddit, size)
     uri = URI("https://elastic.pushshift.io/rs/submissions/_search/?q=(subreddit:#{subreddit})&size=#{size}&sort=created_utc:desc&_source_includes=selftext")

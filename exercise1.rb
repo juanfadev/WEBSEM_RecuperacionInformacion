@@ -31,30 +31,8 @@ module Exercise1
   end
 
   def cleanUpReddit(hash)
-    # Remove numbers
-    hash.each do |k, v|
-      if /\A\d+\z/.match(k)
-        hash.delete(k)
-      end
-    end
-
-    # Discard words with special chars
-    hash.each do |k, v|
-      special = "?<>',?[]}{=-)(*&^%$#`~{}"
-      regex = /[#{special.gsub(/./) {|char| "\\#{char}"}}]/
-      if (k =~ regex)
-        hash.delete(k)
-      end
-    end
     # Remove words with only one occurence
     hash.delete_if {|key, value| value <= 1}
-    # Short words (less or eq 2 in length) dont have much semantics in english or maybe single letter (I, we, of, my...)
-    #hash.delete_if {|k, v| k.length <= 2}
-    # Delete strange blank char
-    hash.delete("x200b")
-    # Clean URLS
-    hash.delete_if {|k, v| k.start_with?("http")}
-    return hash
   end
 
   def run(size)
